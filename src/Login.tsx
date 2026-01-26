@@ -12,7 +12,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function Login() {
     });
 
     if (error) {
-      setError(error.message);
+      //setError(error.message);
       toast.error(`Error: ${error.message}`);
       setIsLoading(false);
       return;
