@@ -1,10 +1,15 @@
 import "./index.css";
-import { useState, useCallback } from "react";
-import { supabase } from "./lib/supabase";
-
+import { useState, useCallback, useEffect } from "react";
+import { createClient, type Session } from "@supabase/supabase-js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { Navigate } from "react-router-dom";
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface Message {
   id: string;
@@ -23,6 +28,32 @@ const ChatInterface: React.FC = () => {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true); // 🔐 auth
+
+  useEffect(() => {
+    let mounted = true;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (mounted) {
+        setSession(data.session);
+        setAuthLoading(false);
+      }
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (mounted) {
+          setSession(session);
+        }
+      },
+    );
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   /* ----------------------------------------
    * ENVIAR MENSAJE + INVOCAR EDGE FUNCTION
@@ -52,7 +83,7 @@ const ChatInterface: React.FC = () => {
               prompt: text,
               user_id: "demo-user",
             },
-          }
+          },
         );
 
         if (error) throw error;
@@ -79,8 +110,18 @@ const ChatInterface: React.FC = () => {
         setIsLoading(false);
       }
     },
-    [isLoading]
+    [isLoading],
   );
+
+  // ⏳ mientras se valida la sesión
+  if (authLoading) {
+    return null; // o spinner
+  }
+
+  // ❌ sesión inválida
+  if (!session) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

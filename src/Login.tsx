@@ -30,7 +30,7 @@ export default function Login() {
         if (_event === "SIGNED_IN") {
           toast.success("¡Login exitoso! 🎉");
         }
-      }
+      },
     );
 
     return () => {
@@ -61,7 +61,7 @@ export default function Login() {
 
   // 🔑 AQUÍ SE NAVEGA
   if (session) {
-    return <Navigate to="/chat" replace />;
+    return <Navigate to="/chat" state={{ session: session }} replace />;
   }
 
   return (
