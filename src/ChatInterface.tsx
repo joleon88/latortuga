@@ -132,7 +132,7 @@ const ChatInterface: React.FC = () => {
    * UI DEL CHAT
    ---------------------------------------- */
   return (
-    <div className="flex flex-col h-screen bg-gray-50 p-4">
+    <div className="flex flex-col min-h-screen bg-gray-50 p-4">
       {/* Título y Encabezado */}
       <header className="pb-4 border-b border-indigo-200 mb-4">
         <h1 className="text-3xl font-bold text-indigo-700">
@@ -187,7 +187,7 @@ const ChatInterface: React.FC = () => {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Escribe tu comando o pregunta aquí (Ej: ¿Qué hay el 25 de diciembre? o Renta Salón A para Pedro el 1 de Enero)..."
+          placeholder="Ordena o pregunta aquí (Ej: ¿Qué hay el 25 de diciembre? o Apartar Salón A para Pedro el 1 de Enero)..."
           className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
           disabled={isLoading}
         />
