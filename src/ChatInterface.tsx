@@ -5,6 +5,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import { Navigate } from "react-router-dom";
+import { IconCalendarQuestion } from "@tabler/icons-react";
+import Calendar from "./Calendar";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -30,6 +32,8 @@ const ChatInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true); // 🔐 auth
+  const [calend, setCalend] = useState(false);
+  const [fechas, setFechas] = useState<Date[]>([]);
 
   useEffect(() => {
     let mounted = true;
@@ -53,6 +57,32 @@ const ChatInterface: React.FC = () => {
       mounted = false;
       listener.subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    async function getDateOcupated() {
+      try {
+        const { data, error } = await supabase
+          .from("la_tortuga_eventos")
+          .select("fecha_evento");
+        if (error) throw error;
+
+        console.log("raw fechas:", data);
+
+        const parsed: Date[] = data.map((row: any) => {
+          // row.fecha_evento === '2026-02-28' por ejemplo
+          const [y, m, d] = row.fecha_evento.split("-").map(Number);
+          // construimos un Date de medianoche en la zona local
+          return new Date(y, m - 1, d);
+        });
+
+        console.log("parsed fechas:", parsed);
+        setFechas(parsed);
+      } catch (err) {
+        console.error("Error leyendo de DB:", err);
+      }
+    }
+    getDateOcupated();
   }, []);
 
   /* ----------------------------------------
@@ -138,9 +168,26 @@ const ChatInterface: React.FC = () => {
         <h1 className="text-3xl font-bold text-indigo-700">
           Asistente La Tortuga 🐢
         </h1>
-        <p className="text-sm text-gray-500">
-          Gestión eventos, Bienvenid@ Juan.
-        </p>
+        <div className="flex flex-row justify-between">
+          <p className="text-sm text-gray-500">
+            Gestión eventos, Bienvenid@ Juan.
+          </p>
+
+          {/* envoltorio relativo para el icono + calendario */}
+          <div className="relative">
+            <IconCalendarQuestion
+              stroke={2}
+              color="#4f39f6"
+              size={40}
+              onClick={() => setCalend(!calend)}
+            />
+            {calend && (
+              <div className="absolute top-full mt-2 right-0 z-50">
+                <Calendar occupiedDates={fechas} />
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Área de Mensajes */}
